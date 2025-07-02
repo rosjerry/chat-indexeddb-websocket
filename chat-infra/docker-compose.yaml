@@ -35,6 +35,19 @@ services:
     networks:
       - kafka-net
 
+  chat-backend:
+    build: ../chat-backend
+    container_name: chat-backend
+    ports:
+      - "5174:5174"
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+      - NODE_ENV=development
+    depends_on:
+      - kafka
+    networks:
+      - kafka-net
+
 networks:
   kafka-net:
     driver: bridge
