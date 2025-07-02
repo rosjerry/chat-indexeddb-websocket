@@ -1,2 +1,4 @@
 chat-frontend/node_modules
 chat-backend/node_modules
+chat-frontend/.env
+chat-backend/.env
