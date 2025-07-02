@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-const dummyData: any = [];
+import { messages, Message } from '../models/messageModel';
 
 export const sendMessage = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { name } = req.body;
-    const newItem = { id: Date.now(), name };
-    dummyData.push(newItem);
+    const { text } = req.body;
+    const newItem = { id: Date.now(), text };
+    messages.push(newItem);
     res.status(201).json(newItem);
   } catch (error) {
     next(error);
@@ -14,7 +14,7 @@ export const sendMessage = (req: Request, res: Response, next: NextFunction) => 
 
 export const receiveMessages = (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.json(dummyData);
+    res.json(messages);
   } catch (error) {
     next(error);
   }
