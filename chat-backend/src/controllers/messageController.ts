@@ -1,21 +1,38 @@
 import { Request, Response, NextFunction } from 'express';
 import { messages, Message } from '../models/messageModel';
 
-export const sendMessage = (req: Request, res: Response, next: NextFunction) => {
+export const sendMessage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const { text } = req.body;
-    const newItem: Message = { id: Date.now(), text };
-    messages.push(newItem);
-    res.status(201).json(newItem);
+    const { text, sender } = req.body;
+
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      text,
+      sender: sender || 'user',
+      timestamp: new Date(),
+    };
+
+    messages.push(newMessage);
+    res.status(201).json(newMessage);
   } catch (error) {
+    console.error('Error creating message:', error);
+    res.status(500).json({ error: 'Failed to create message' });
     next(error);
   }
 };
 
-export const receiveMessages = (req: Request, res: Response, next: NextFunction) => {
+export const receiveMessages = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     res.json(messages);
   } catch (error) {
     next(error);
   }
-}
+};
