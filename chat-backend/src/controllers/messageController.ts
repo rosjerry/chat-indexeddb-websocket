@@ -4,7 +4,7 @@ import { messages, Message } from '../models/messageModel';
 export const sendMessage = (req: Request, res: Response, next: NextFunction) => {
   try {
     const { text } = req.body;
-    const newItem = { id: Date.now(), text };
+    const newItem: Message = { id: Date.now(), text };
     messages.push(newItem);
     res.status(201).json(newItem);
   } catch (error) {
