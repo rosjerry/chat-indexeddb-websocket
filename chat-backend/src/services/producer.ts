@@ -13,7 +13,7 @@ export const run = async (res: any) => {
 
   await producer.send({
     topic: 'chat-messages',
-    messages: [{ key: 'user1', value: JSON.stringify(res) }],
+    messages: [{ key: res.id, value: JSON.stringify(res) }],
   });
 
   console.log('message sent successfully ==> ', res);

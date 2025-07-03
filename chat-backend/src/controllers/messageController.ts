@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { messages, Message } from '../models/messageModel';
 import { run } from '../services/producer';
+import { v4 as uuid } from 'uuid';
 
 export const createUser = async(req: any, res: any) => {
   try {
@@ -19,13 +20,13 @@ export const sendMessage = async (
   next: NextFunction,
 ) => {
   try {
-    const { text, sender } = req.body;
+    const { text, user } = req.body;
 
     const newMessage: Message = {
-      id: Date.now().toString(),
-      text,
-      sender: sender || 'user',
-      timestamp: new Date(),
+      id: uuid(),
+      text: text,
+      user: user,
+      timestamp: new Date().toISOString(),
     };
     run(newMessage);
     messages.push(newMessage);

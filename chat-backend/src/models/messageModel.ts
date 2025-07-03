@@ -1,8 +1,8 @@
 export interface Message {
-  id: number | string;
+  id: string;
   text: string;
-  sender: string;
-  timestamp: Date;
+  user: string;
+  timestamp: string;
 }
 
 export let messages: Message[] = [];
