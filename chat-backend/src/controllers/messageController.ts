@@ -1,5 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import { messages, Message } from '../models/messageModel';
+import { run } from '../services/producer';
+
+export const createUser = async(req: any, res: any) => {
+  try {
+    const newUser = req.body.username;
+    
+    run(newUser)
+  } catch (error) {
+    console.error('Error creating user:', error);
+    res.status(500).json({ error: 'Failed to create user' });
+  }
+}
 
 export const sendMessage = async (
   req: Request,
@@ -15,7 +27,7 @@ export const sendMessage = async (
       sender: sender || 'user',
       timestamp: new Date(),
     };
-
+    run(newMessage);
     messages.push(newMessage);
     res.status(201).json(newMessage);
   } catch (error) {
