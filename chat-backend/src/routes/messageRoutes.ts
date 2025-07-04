@@ -3,6 +3,6 @@ import { receiveMessages, sendMessage } from '../controllers/messageController';
 const router = Router();
 
 router.get('/', receiveMessages);
-router.post('/', sendMessage);
+router.post('/send', sendMessage);
 
 export default router;

@@ -8,13 +8,29 @@ const kafka = new Kafka({
 
 const producer = kafka.producer();
 
-export const run = async (res: any) => {
-  await producer.connect();
+export const run = async (message: any) => {
+  try {
+    await producer.connect();
 
-  await producer.send({
-    topic: 'chat-messages',
-    messages: [{ key: res.id, value: JSON.stringify(res) }],
-  });
+    // Add timestamp and ensure message has proper structure
+    const messageToSend = {
+      ...message,
+      timestamp: new Date().toISOString(),
+      id: message.id || Date.now().toString()
+    };
 
-  console.log('message sent successfully ==> ', res);
+    await producer.send({
+      topic: 'chat-messages',
+      messages: [{ 
+        key: messageToSend.id, 
+        value: JSON.stringify(messageToSend) 
+      }],
+    });
+
+    console.log('Message sent successfully to Kafka:', messageToSend);
+    return messageToSend;
+  } catch (error) {
+    console.error('Error sending message to Kafka:', error);
+    throw error;
+  }
 };

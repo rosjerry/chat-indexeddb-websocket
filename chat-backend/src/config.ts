@@ -8,7 +8,7 @@ interface Config {
 }
 
 const config: Config = {
-  port: Number(process.env.PORT) || 5174,
+  port: Number(process.env.PORT) || 5177,
   nodeEnv: process.env.NODE_ENV || 'development',
 };
 
