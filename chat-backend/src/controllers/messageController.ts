@@ -3,17 +3,6 @@ import { messages, Message } from '../models/messageModel';
 import { run } from '../services/producer';
 import { v4 as uuid } from 'uuid';
 
-export const createUser = async(req: any, res: any) => {
-  try {
-    const newUser = req.body.username;
-    
-    run(newUser)
-  } catch (error) {
-    console.error('Error creating user:', error);
-    res.status(500).json({ error: 'Failed to create user' });
-  }
-}
-
 export const sendMessage = async (
   req: Request,
   res: Response,
