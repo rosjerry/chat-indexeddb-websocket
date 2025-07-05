@@ -15,11 +15,13 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@types/websocket": "^1.0.10",
     "cors": "^2.8.5",
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "kafkajs": "^2.2.4",
     "uuid": "^11.1.0",
+    "websocket": "^1.0.35",
     "ws": "^8.18.3"
   },
   "devDependencies": {
