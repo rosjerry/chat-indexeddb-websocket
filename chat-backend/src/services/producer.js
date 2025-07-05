@@ -8,11 +8,9 @@ const kafka = new Kafka({
 
 const producer = kafka.producer();
 
-export const run = async (message: any) => {
+export const run = async (message) => {
   try {
     await producer.connect();
-
-    // Add timestamp and ensure message has proper structure
     const messageToSend = {
       ...message,
       timestamp: new Date().toISOString(),

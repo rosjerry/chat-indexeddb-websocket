@@ -1,14 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { messages, Message } from '../models/messageModel';
 import { run } from '../services/producer';
-import { broadcastMessage } from '../app';
 import { v4 as uuid } from 'uuid';
 
 export const sendMessage = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
+  req,
+  res,
+  next,
+) => {
   try {
     const { text, user } = req.body;
 
@@ -17,7 +16,7 @@ export const sendMessage = async (
       return;
     }
 
-    const newMessage: Message = {
+    const newMessage = {
       id: uuid(),
       text: text,
       user: user,
@@ -28,10 +27,7 @@ export const sendMessage = async (
     
     messages.push(newMessage);
     
-    broadcastMessage({
-      type: 'rest-message',
-      ...newMessage
-    });
+    console.log('Message sent:', newMessage);
     
     res.status(201).json(newMessage);
   } catch (error) {
@@ -42,10 +38,10 @@ export const sendMessage = async (
 };
 
 export const receiveMessages = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): void => {
+  _req,
+  res,
+  next,
+) => {
   try {
     res.json(messages);
   } catch (error) {
