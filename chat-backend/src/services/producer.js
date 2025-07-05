@@ -8,7 +8,7 @@ const kafka = new Kafka({
 
 const producer = kafka.producer();
 
-export const run = async (message) => {
+export const sendMessage = async (message) => {
   try {
     await producer.connect();
     const messageToSend = {

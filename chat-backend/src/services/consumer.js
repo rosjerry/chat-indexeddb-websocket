@@ -8,7 +8,7 @@ const kafka = new Kafka({
 
 const consumer = kafka.consumer({ groupId: 'chat-group' });
 
-export const run = async () => {
+export const receiveMessage = async () => {
   await consumer.connect();
   await consumer.subscribe({ topic: 'chat-messages', fromBeginning: true });
 
@@ -17,6 +17,14 @@ export const run = async () => {
       console.log("**** Message arrived in consumer ****");
       const parsedMessage = JSON.parse(message.value?.toString() || '{}');
       console.log('Received message:', parsedMessage);
+      console.log({
+        topic,
+        partition,
+        offset: message.offset,
+        value: message.value.toString(),
+      });
     },
   });
 };
+
+consumeMessages().catch(console.error);
