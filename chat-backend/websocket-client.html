@@ -381,6 +381,22 @@
                         message: 'Failed to send message'
                     });
                 }
+                
+                fetch('/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(message)
+                })
+                .then(response => response.json())
+                .catch(error => {
+                    console.error('HTTP POST /send error:', error);
+                    this.displayMessage({
+                        type: 'error',
+                        message: 'HTTP error sending message'
+                    });
+                });
             }
             
             handleMessage(message) {

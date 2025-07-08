@@ -292,45 +292,30 @@ function generateMessageId() {
 // REST API Endpoints
 app.post("/send", async (req, res) => {
   try {
-    const { text, user } = req.body;
-
-    if (!text || !user) {
-      return res.status(400).json({
-        error: "Both text and user are required",
-      });
-    }
+    const { text, user, timestamp } = req.body;
+    console.log(" ====>>>> ",req.body)
 
     const message = {
       text,
       user,
-      timestamp: new Date().toISOString(),
-      source: "http",
+      timestamp
     };
-
-    const sentMessage = await sendMessage(message);
 
     let config = {
       method: "post",
-      maxBodyLength: Infinity,
-      url: "http://localhost:8082/send",
+      url: "http://localhost:8082/chat-messages",
       headers: {
         "Content-Type": "application/json",
       },
       data: message,
     };
 
-    await axios
-      .request(config)
-      .then((response) => {
-        console.log(JSON.stringify(response.data));
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    const ress = await axios.request(config)
+
+    console.log(ress.data)
 
     res.status(200).json({
       success: true,
-      message: sentMessage,
     });
   } catch (error) {
     console.error("Error in /send endpoint:", error);
