@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "json-server": "json-server --watch db.json --port 8082"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "axios": "^1.10.0",
     "express": "^5.1.0",
     "json-server": "^1.0.0-beta.3",
     "kafkajs": "^2.2.4",
