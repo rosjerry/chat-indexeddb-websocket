@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "express": "^5.1.0",
+    "json-server": "^1.0.0-beta.3",
     "kafkajs": "^2.2.4",
     "ws": "^8.18.3"
   }
