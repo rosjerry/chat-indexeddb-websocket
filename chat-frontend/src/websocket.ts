@@ -21,34 +21,36 @@ export class WebSocketService {
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
+        console.log('[WebSocket] Attempting to connect to', this.url);
         this.ws = new WebSocket(this.url);
 
         this.ws.onopen = () => {
-          console.log('WebSocket connected');
+          console.log('[WebSocket] Connected');
           this.reconnectAttempts = 0;
           this.notifyConnectionChange(true);
           resolve();
         };
 
         this.ws.onmessage = (event) => {
+          console.log('[WebSocket] Message received:', event.data);
           try {
             const data = JSON.parse(event.data);
             if (data.type === 'chat_message') {
               this.notifyMessageHandlers(data.message);
             }
           } catch (error) {
-            console.error('Error parsing WebSocket message:', error);
+            console.error('[WebSocket] Error parsing message:', error);
           }
         };
 
-        this.ws.onclose = () => {
-          console.log('WebSocket disconnected');
+        this.ws.onclose = (event) => {
+          console.log('[WebSocket] Disconnected', event);
           this.notifyConnectionChange(false);
           this.attemptReconnect();
         };
 
         this.ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
+          console.error('[WebSocket] Error:', error);
           reject(error);
         };
       } catch (error) {
@@ -60,15 +62,14 @@ export class WebSocketService {
   private attemptReconnect(): void {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
-      console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
-      
+      console.log(`[WebSocket] Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
       setTimeout(() => {
         this.connect().catch((error) => {
-          console.error('Reconnection failed:', error);
+          console.error('[WebSocket] Reconnection failed:', error);
         });
       }, this.reconnectDelay * this.reconnectAttempts);
     } else {
-      console.error('Max reconnection attempts reached');
+      console.error('[WebSocket] Max reconnection attempts reached');
     }
   }
 
@@ -79,13 +80,13 @@ export class WebSocketService {
         id: Date.now().toString(),
         timestamp: Date.now(),
       };
-      
+      console.log('[WebSocket] Sending message:', chatMessage);
       this.ws.send(JSON.stringify({
         type: 'chat_message',
         message: chatMessage
       }));
     } else {
-      console.error('WebSocket is not connected');
+      console.error('[WebSocket] Cannot send message, not connected');
     }
   }
 
@@ -107,6 +108,7 @@ export class WebSocketService {
 
   disconnect(): void {
     if (this.ws) {
+      console.log('[WebSocket] Closing connection');
       this.ws.close();
       this.ws = null;
     }
@@ -117,5 +119,4 @@ export class WebSocketService {
   }
 }
 
-// Create a singleton instance
 export const wsService = new WebSocketService('ws://localhost:8080'); 
