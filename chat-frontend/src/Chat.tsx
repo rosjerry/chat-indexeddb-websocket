@@ -33,7 +33,10 @@ export const Chat = () => {
         
         // Set up message handler
         wsService.onMessage((message) => {
-          setMessages(prev => [...prev, message]);
+          // Don't add messages that the current user sent (they're already in local state)
+          if (message.user !== 'User') {
+            setMessages(prev => [...prev, message]);
+          }
         });
 
         // Set up connection status handler
@@ -65,6 +68,17 @@ export const Chat = () => {
     setIsLoading(true);
     
     try {
+      const newMessage = {
+        id: Date.now().toString(),
+        text: text.trim(),
+        user: 'User', // You can make this configurable
+        timestamp: Date.now(),
+      };
+      
+      // Add message to local state immediately
+      setMessages(prev => [...prev, newMessage]);
+      
+      // Send message via WebSocket
       wsService.sendMessage({
         text: text.trim(),
         user: 'User', // You can make this configurable
