@@ -1,9 +1,8 @@
 import { UserOutlined } from "@ant-design/icons";
-import { Bubble, Sender, useXAgent, useXChat } from "@ant-design/x";
-import { Flex, type GetProp } from "antd";
+import { Bubble, Sender } from "@ant-design/x";
+import { Flex, type GetProp, Badge, message } from "antd";
 import React from "react";
-
-const sleep = () => new Promise((resolve) => setTimeout(resolve, 1000));
+import { wsService, type ChatMessage } from "./websocket";
 
 const roles: GetProp<typeof Bubble.List, "roles"> = {
   ai: {
@@ -20,51 +19,89 @@ const roles: GetProp<typeof Bubble.List, "roles"> = {
   },
 };
 
-let mockSuccess = false;
-
 export const Chat = () => {
   const [content, setContent] = React.useState("");
+  const [messages, setMessages] = React.useState<ChatMessage[]>([]);
+  const [isConnected, setIsConnected] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  // Agent for request
-  const [agent] = useXAgent<string, { message: string }, string>({
-    request: async ({ message }, { onSuccess, onError }) => {
-      await sleep();
-      mockSuccess = !mockSuccess;
-      if (mockSuccess) {
-        onSuccess([`Mock success return. You said: ${message}`]);
+  // Connect to WebSocket on component mount
+  React.useEffect(() => {
+    const connectToWebSocket = async () => {
+      try {
+        await wsService.connect();
+        
+        // Set up message handler
+        wsService.onMessage((message) => {
+          setMessages(prev => [...prev, message]);
+        });
+
+        // Set up connection status handler
+        wsService.onConnectionChange((connected) => {
+          setIsConnected(connected);
+          if (connected) {
+            message.success('Connected to chat server');
+          } else {
+            message.warning('Disconnected from chat server');
+          }
+        });
+      } catch (error) {
+        console.error('Failed to connect to WebSocket:', error);
+        message.error('Failed to connect to chat server');
       }
+    };
 
-      onError(new Error("Mock request failed"));
-    },
-  });
+    connectToWebSocket();
 
-  // Chat messages
-  const { onRequest, messages } = useXChat({
-    agent,
-    requestPlaceholder: "Waiting...",
-    requestFallback: "Mock failed return. Please try again later.",
-  });
+    // Cleanup on unmount
+    return () => {
+      wsService.disconnect();
+    };
+  }, []);
+
+  const handleSendMessage = (text: string) => {
+    if (!text.trim()) return;
+    
+    setIsLoading(true);
+    
+    try {
+      wsService.sendMessage({
+        text: text.trim(),
+        user: 'User', // You can make this configurable
+      });
+      
+      setContent("");
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      message.error('Failed to send message');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Flex vertical gap="middle">
+      <Badge 
+        status={isConnected ? "success" : "error"} 
+        text={isConnected ? "Connected" : "Disconnected"}
+        style={{ alignSelf: 'flex-end' }}
+      />
       <Bubble.List
         roles={roles}
         style={{ maxHeight: "85vh", overflow: "auto" }}
-        items={messages.map(({ id, message, status }) => ({
-          key: id,
-          loading: status === "loading",
-          role: status === "local" ? "local" : "ai",
-          content: message,
+        items={messages.map((msg) => ({
+          key: msg.id,
+          loading: false,
+          role: msg.user === 'User' ? "local" : "ai",
+          content: msg.text,
         }))}
       />
       <Sender
-        loading={agent.isRequesting()}
+        loading={isLoading}
         value={content}
         onChange={setContent}
-        onSubmit={(nextContent) => {
-          onRequest(nextContent);
-          setContent("");
-        }}
+        onSubmit={handleSendMessage}
+        disabled={!isConnected}
       />
     </Flex>
   );
