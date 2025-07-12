@@ -1,8 +1,9 @@
 import { UserOutlined } from "@ant-design/icons";
 import { Bubble, Sender } from "@ant-design/x";
-import { Flex, type GetProp, Badge, message } from "antd";
+import { Flex, type GetProp, Badge, message, Button, Input, Space } from "antd";
 import React from "react";
 import { wsService, type ChatMessage } from "./websocket";
+import { UsernameManager } from "./username";
 
 const roles: GetProp<typeof Bubble.List, "roles"> = {
   ai: {
@@ -24,6 +25,15 @@ export const Chat = () => {
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [isConnected, setIsConnected] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [username, setUsername] = React.useState("");
+  const [showUsernameInput, setShowUsernameInput] = React.useState(false);
+  const [newUsername, setNewUsername] = React.useState("");
+
+  // Initialize username on component mount
+  React.useEffect(() => {
+    const storedUsername = UsernameManager.getUsername();
+    setUsername(storedUsername);
+  }, []);
 
   // Connect to WebSocket on component mount
   React.useEffect(() => {
@@ -34,7 +44,7 @@ export const Chat = () => {
         // Set up message handler
         wsService.onMessage((message) => {
           // Don't add messages that the current user sent (they're already in local state)
-          if (message.user !== 'User') {
+          if (message.user !== username) {
             setMessages(prev => [...prev, message]);
           }
         });
@@ -54,13 +64,15 @@ export const Chat = () => {
       }
     };
 
-    connectToWebSocket();
+    if (username) {
+      connectToWebSocket();
+    }
 
     // Cleanup on unmount
     return () => {
       wsService.disconnect();
     };
-  }, []);
+  }, [username]);
 
   const handleSendMessage = (text: string) => {
     if (!text.trim()) return;
@@ -71,7 +83,7 @@ export const Chat = () => {
       const newMessage = {
         id: Date.now().toString(),
         text: text.trim(),
-        user: 'User', // You can make this configurable
+        user: username,
         timestamp: Date.now(),
       };
       
@@ -81,7 +93,7 @@ export const Chat = () => {
       // Send message via WebSocket
       wsService.sendMessage({
         text: text.trim(),
-        user: 'User', // You can make this configurable
+        user: username,
       });
       
       setContent("");
@@ -93,20 +105,66 @@ export const Chat = () => {
     }
   };
 
+  const handleGenerateNewUsername = () => {
+    const newUsername = UsernameManager.generateAndSaveUsername();
+    setUsername(newUsername);
+    message.success('New username generated!');
+  };
+
+  const handleChangeUsername = () => {
+    if (newUsername.trim()) {
+      UsernameManager.setUsername(newUsername.trim());
+      setUsername(newUsername.trim());
+      setShowUsernameInput(false);
+      setNewUsername("");
+      message.success('Username changed!');
+    }
+  };
+
   return (
     <Flex vertical gap="middle">
-      <Badge 
-        status={isConnected ? "success" : "error"} 
-        text={isConnected ? "Connected" : "Disconnected"}
-        style={{ alignSelf: 'flex-end' }}
-      />
+      <Flex justify="space-between" align="center">
+        <Space>
+          <span>Username: <strong>{username}</strong></span>
+          <Button size="small" onClick={handleGenerateNewUsername}>
+            Generate New
+          </Button>
+          <Button 
+            size="small" 
+            onClick={() => setShowUsernameInput(!showUsernameInput)}
+          >
+            Change
+          </Button>
+        </Space>
+        <Badge 
+          status={isConnected ? "success" : "error"} 
+          text={isConnected ? "Connected" : "Disconnected"}
+        />
+      </Flex>
+      
+      {showUsernameInput && (
+        <Flex gap="small">
+          <Input
+            placeholder="Enter new username"
+            value={newUsername}
+            onChange={(e) => setNewUsername(e.target.value)}
+            onPressEnter={handleChangeUsername}
+          />
+          <Button onClick={handleChangeUsername}>Save</Button>
+          <Button onClick={() => {
+            setShowUsernameInput(false);
+            setNewUsername("");
+          }}>Cancel</Button>
+        </Flex>
+      )}
+      
       <Bubble.List
         roles={roles}
         style={{ maxHeight: "85vh", overflow: "auto" }}
         items={messages.map((msg) => ({
           key: msg.id,
           loading: false,
-          role: msg.user === 'User' ? "local" : "ai",
+          role: msg.user === username ? "local" : "ai",
           content: msg.text,
         }))}
       />

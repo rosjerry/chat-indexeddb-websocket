@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ant-design/x": "^1.4.0",
+    "@faker-js/faker": "^9.9.0",
     "antd": "^5.26.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
